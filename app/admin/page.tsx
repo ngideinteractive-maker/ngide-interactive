@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
+import { useAlert } from '@/components/providers/AlertProvider'
 import './admin.css'
 
 interface Game {
@@ -22,9 +24,9 @@ interface News {
 }
 
 const ADMIN_PASSWORD = 'Budibudian_17'
-const IMGUR_CLIENT_ID = '546c25a59c58ad7' // Public Client ID for anonymous uploads
 
 export default function AdminPage() {
+  const { showAlert } = useAlert()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState(false)
@@ -51,15 +53,6 @@ export default function AdminPage() {
   const [editingGame, setEditingGame] = useState<Game | null>(null)
   const [editingNews, setEditingNews] = useState<News | null>(null)
 
-  useEffect(() => {
-    // Check if already authenticated in session
-    const authenticated = sessionStorage.getItem('adminAuthenticated')
-    if (authenticated === 'true') {
-      setIsAuthenticated(true)
-      loadData()
-    }
-  }, [])
-
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
     if (passwordInput === ADMIN_PASSWORD) {
@@ -79,7 +72,7 @@ export default function AdminPage() {
     setPasswordInput('')
   }
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     // Load from localStorage
     const savedGames = localStorage.getItem('adminGames')
     const savedNews = localStorage.getItem('adminNews')
@@ -91,17 +84,24 @@ export default function AdminPage() {
     if (savedNews) {
       const parsedNews = JSON.parse(savedNews)
       // Fix old news without date/slug/content
-      const fixedNews = parsedNews.map((item: any) => ({
+      const fixedNews = parsedNews.map((item: Record<string, unknown>) => ({
         ...item,
         content: item.content || '',
-        slug: item.slug || generateSlug(item.title),
+        slug: item.slug || generateSlug(String(item.title)),
         date: item.date || new Date().toISOString()
       }))
       setNews(fixedNews)
-      // Save fixed data back
-      localStorage.setItem('adminNews', JSON.stringify(fixedNews))
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    // Check if already authenticated in session
+    const authenticated = sessionStorage.getItem('adminAuthenticated')
+    if (authenticated === 'true') {
+      setIsAuthenticated(true)
+      loadData()
+    }
+  }, [loadData])
 
   const saveGames = (newGames: Game[]) => {
     setGames(newGames)
@@ -144,7 +144,7 @@ export default function AdminPage() {
   // Game CRUD
   const addGame = () => {
     if (!gameTitle || !gameImage) {
-      alert('Please fill all fields')
+      showAlert('error', 'Error', 'Please fill all fields')
       return
     }
 
@@ -165,9 +165,18 @@ export default function AdminPage() {
   }
 
   const deleteGame = (id: string) => {
-    if (confirm('Delete this game?')) {
-      saveGames(games.filter(g => g.id !== id))
-    }
+    const gameToDelete = games.find(g => g.id === id)
+    showAlert(
+      'warning',
+      'Delete Game',
+      `Are you sure you want to delete "${gameToDelete?.title}"? This action cannot be undone.`,
+      {
+        onConfirm: () => saveGames(games.filter(g => g.id !== id)),
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        showCancel: true
+      }
+    )
   }
 
   const startEditGame = (game: Game) => {
@@ -181,7 +190,7 @@ export default function AdminPage() {
 
   const updateGame = () => {
     if (!editingGame || !gameTitle || !gameImage) {
-      alert('Please fill all required fields')
+      showAlert('error', 'Error', 'Please fill all required fields')
       return
     }
 
@@ -209,7 +218,7 @@ export default function AdminPage() {
   // News CRUD
   const addNews = () => {
     if (!newsTitle || !newsImage || !newsContent) {
-      alert('Please fill all required fields (title, image, content)')
+      showAlert('error', 'Error', 'Please fill all required fields (title, image, content)')
       return
     }
 
@@ -235,9 +244,18 @@ export default function AdminPage() {
   }
 
   const deleteNews = (id: string) => {
-    if (confirm('Delete this news?')) {
-      saveNews(news.filter(n => n.id !== id))
-    }
+    const newsToDelete = news.find(n => n.id === id)
+    showAlert(
+      'warning',
+      'Delete News',
+      `Are you sure you want to delete "${newsToDelete?.title}"? This action cannot be undone.`,
+      {
+        onConfirm: () => saveNews(news.filter(n => n.id !== id)),
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        showCancel: true
+      }
+    )
   }
 
   const startEditNews = (newsItem: News) => {
@@ -251,7 +269,7 @@ export default function AdminPage() {
 
   const updateNews = () => {
     if (!editingNews || !newsTitle || !newsImage || !newsContent) {
-      alert('Please fill all required fields')
+      showAlert('error', 'Error', 'Please fill all required fields')
       return
     }
 
@@ -304,7 +322,7 @@ export default function AdminPage() {
                 Login
               </button>
             </form>
-            <a href="/" className="back-link-login">← Back to Site</a>
+            <Link href="/" className="back-link-login">← Back to Site</Link>
           </div>
         </div>
       </div>
@@ -317,7 +335,7 @@ export default function AdminPage() {
         <h1>NGIDE Admin Dashboard</h1>
         <div className="header-actions">
           <button onClick={handleLogout} className="logout-button">Logout</button>
-          <a href="/" className="back-link">← Back to Site</a>
+          <Link href="/" className="back-link">← Back to Site</Link>
         </div>
       </header>
 
@@ -418,7 +436,7 @@ export default function AdminPage() {
                 <label>Status</label>
                 <select
                   value={gameStatus}
-                  onChange={(e) => setGameStatus(e.target.value as any)}
+                  onChange={(e) => setGameStatus(e.target.value as 'released' | 'development' | 'coming-soon')}
                 >
                   <option value="released">Released</option>
                   <option value="development">In Development</option>

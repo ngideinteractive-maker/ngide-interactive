@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAlert } from '@/components/providers/AlertProvider'
 import './news-detail.css'
 
 interface News {
@@ -16,8 +17,8 @@ interface News {
 }
 
 export default function NewsDetailPage() {
+  const { showAlert } = useAlert()
   const params = useParams()
-  const router = useRouter()
   const slug = params.slug as string
   
   const [news, setNews] = useState<News | null>(null)
@@ -50,7 +51,7 @@ export default function NewsDetailPage() {
       <div className="news-detail-container">
         <div className="not-found">
           <h1>News Not Found</h1>
-          <p>The news article you're looking for doesn't exist.</p>
+          <p>The news article you&apos;re looking for doesn&apos;t exist.</p>
           <Link href="/" className="back-button">
             ← Back to Home
           </Link>
@@ -114,7 +115,7 @@ export default function NewsDetailPage() {
             <button
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href)
-                alert('Link copied to clipboard!')
+                showAlert('success', 'Link Copied!', 'Article link has been copied to clipboard')
               }}
               className="share-btn"
             >

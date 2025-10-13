@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Orbitron, Poppins } from 'next/font/google'
+import { AlertProvider } from '@/components/providers/AlertProvider'
 import './globals.css'
 
 const orbitron = Orbitron({
@@ -26,7 +27,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${orbitron.variable} ${poppins.variable}`}>
-      <body>{children}</body>
+      <body>
+        <AlertProvider>
+          {children}
+        </AlertProvider>
+      </body>
     </html>
   )
 }

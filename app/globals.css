@@ -999,7 +999,5 @@ footer {
     color: rgba(255, 255, 255, 0.5);
 }
 
-.empty-state p {
-    font-size: 1.1rem;
-    font-family: var(--font-body);
-}
+/* Custom Alert Styles */
+@import '../components/ui/CustomAlert.css';

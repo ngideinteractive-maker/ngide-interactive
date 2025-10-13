@@ -29,7 +29,7 @@ export default function GamesSection() {
     if (carouselRef.current) {
       initCarousel()
     }
-  }, [initCarousel, games])
+  }, [games])
 
   return (
     <section id="games" className="content-section">
