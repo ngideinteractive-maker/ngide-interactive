@@ -1,20 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAlert } from '@/components/providers/AlertProvider'
+import { getAllNews, type News } from '@/lib/firebaseService'
 import './news-detail.css'
-
-interface News {
-  id: string
-  title: string
-  image: string
-  tag: string
-  content: string
-  slug: string
-  date: string
-}
 
 export default function NewsDetailPage() {
   const { showAlert } = useAlert()
@@ -25,17 +16,17 @@ export default function NewsDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Load news from localStorage
-    const savedNews = localStorage.getItem('adminNews')
-    if (savedNews) {
-      const allNews: News[] = JSON.parse(savedNews)
+    // Load news from Firebase
+    const loadNews = async () => {
+      const allNews = await getAllNews()
       const foundNews = allNews.find(n => n.slug === slug)
       
       if (foundNews) {
         setNews(foundNews)
       }
+      setLoading(false)
     }
-    setLoading(false)
+    loadNews()
   }, [slug])
 
   if (loading) {

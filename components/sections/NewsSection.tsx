@@ -2,27 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
-interface NewsItem {
-  id: string
-  title: string
-  image: string
-  tag: string
-  content?: string
-  slug?: string
-  date?: string
-}
+import { subscribeToNews, type News } from '@/lib/firebaseService'
 
 export default function NewsSection() {
-  const [news, setNews] = useState<NewsItem[]>([])
+  const [news, setNews] = useState<News[]>([])
 
   useEffect(() => {
-    // Load news from admin (localStorage)
-    const adminNews = localStorage.getItem('adminNews')
-    if (adminNews) {
-      const parsedNews = JSON.parse(adminNews)
-      setNews(parsedNews)
-    }
+    // Subscribe to real-time news updates
+    const unsubscribe = subscribeToNews((newsData) => {
+      setNews(newsData)
+    })
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe()
   }, [])
 
   const featured = news[0]

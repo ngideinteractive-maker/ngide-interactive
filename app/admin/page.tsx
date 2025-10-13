@@ -3,25 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useAlert } from '@/components/providers/AlertProvider'
+import * as firebaseService from '@/lib/firebaseService'
+import type { Game, News } from '@/lib/firebaseService'
 import './admin.css'
-
-interface Game {
-  id: string
-  title: string
-  image: string
-  platforms?: string[]
-  status?: 'released' | 'development' | 'coming-soon'
-}
-
-interface News {
-  id: string
-  title: string
-  image: string
-  tag: string
-  content: string
-  slug: string
-  date: string
-}
 
 const ADMIN_PASSWORD = 'Budibudian_17'
 
@@ -72,26 +56,15 @@ export default function AdminPage() {
     setPasswordInput('')
   }
 
-  const loadData = useCallback(() => {
-    // Load from localStorage
-    const savedGames = localStorage.getItem('adminGames')
-    const savedNews = localStorage.getItem('adminNews')
+  const loadData = useCallback(async () => {
+    // Load from Firebase
+    const [gamesData, newsData] = await Promise.all([
+      firebaseService.getAllGames(),
+      firebaseService.getAllNews()
+    ])
     
-    if (savedGames) {
-      setGames(JSON.parse(savedGames))
-    }
-    
-    if (savedNews) {
-      const parsedNews = JSON.parse(savedNews)
-      // Fix old news without date/slug/content
-      const fixedNews = parsedNews.map((item: Record<string, unknown>) => ({
-        ...item,
-        content: item.content || '',
-        slug: item.slug || generateSlug(String(item.title)),
-        date: item.date || new Date().toISOString()
-      }))
-      setNews(fixedNews)
-    }
+    setGames(gamesData)
+    setNews(newsData)
   }, [])
 
   useEffect(() => {
@@ -103,23 +76,7 @@ export default function AdminPage() {
     }
   }, [loadData])
 
-  const saveGames = (newGames: Game[]) => {
-    setGames(newGames)
-    localStorage.setItem('adminGames', JSON.stringify(newGames))
-  }
-
-  const saveNews = (newNews: News[]) => {
-    setNews(newNews)
-    localStorage.setItem('adminNews', JSON.stringify(newNews))
-  }
-
-  // Generate slug from title
-  const generateSlug = (title: string): string => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-  }
+  // No need for saveGames/saveNews - Firebase handles persistence
 
   // Handle image URL change with preview
   const handleImageUrlChange = (value: string, type: 'game' | 'news') => {
@@ -142,26 +99,31 @@ export default function AdminPage() {
   }
 
   // Game CRUD
-  const addGame = () => {
+  const addGame = async () => {
     if (!gameTitle || !gameImage) {
       showAlert('error', 'Error', 'Please fill all fields')
       return
     }
 
-    const newGame: Game = {
-      id: Date.now().toString(),
+    const newGame: Omit<Game, 'id'> = {
       title: gameTitle,
       image: gameImage,
       platforms: gamePlatforms.length > 0 ? gamePlatforms : undefined,
       status: gameStatus,
     }
 
-    saveGames([...games, newGame])
-    setGameTitle('')
-    setGameImage('')
-    setGameImagePreview('')
-    setGamePlatforms([])
-    setGameStatus('released')
+    const id = await firebaseService.addGame(newGame)
+    if (id) {
+      showAlert('success', 'Success', 'Game added successfully!')
+      setGameTitle('')
+      setGameImage('')
+      setGameImagePreview('')
+      setGamePlatforms([])
+      setGameStatus('released')
+      loadData() // Reload data from Firebase
+    } else {
+      showAlert('error', 'Error', 'Failed to add game')
+    }
   }
 
   const deleteGame = (id: string) => {
@@ -171,7 +133,15 @@ export default function AdminPage() {
       'Delete Game',
       `Are you sure you want to delete "${gameToDelete?.title}"? This action cannot be undone.`,
       {
-        onConfirm: () => saveGames(games.filter(g => g.id !== id)),
+        onConfirm: async () => {
+          const success = await firebaseService.deleteGame(id)
+          if (success) {
+            showAlert('success', 'Deleted', 'Game deleted successfully')
+            loadData()
+          } else {
+            showAlert('error', 'Error', 'Failed to delete game')
+          }
+        },
         confirmText: 'Delete',
         cancelText: 'Cancel',
         showCancel: true
@@ -188,22 +158,27 @@ export default function AdminPage() {
     setGameImagePreview(game.image)
   }
 
-  const updateGame = () => {
+  const updateGame = async () => {
     if (!editingGame || !gameTitle || !gameImage) {
       showAlert('error', 'Error', 'Please fill all required fields')
       return
     }
 
-    const updatedGame: Game = {
-      ...editingGame,
+    const updatedData: Partial<Game> = {
       title: gameTitle,
       image: gameImage,
       platforms: gamePlatforms.length > 0 ? gamePlatforms : undefined,
       status: gameStatus,
     }
 
-    saveGames(games.map(g => g.id === editingGame.id ? updatedGame : g))
-    cancelEditGame()
+    const success = await firebaseService.updateGame(editingGame.id, updatedData)
+    if (success) {
+      showAlert('success', 'Updated', 'Game updated successfully')
+      cancelEditGame()
+      loadData()
+    } else {
+      showAlert('error', 'Error', 'Failed to update game')
+    }
   }
 
   const cancelEditGame = () => {
@@ -216,17 +191,16 @@ export default function AdminPage() {
   }
 
   // News CRUD
-  const addNews = () => {
+  const addNews = async () => {
     if (!newsTitle || !newsImage || !newsContent) {
       showAlert('error', 'Error', 'Please fill all required fields (title, image, content)')
       return
     }
 
-    const slug = generateSlug(newsTitle)
+    const slug = firebaseService.generateSlug(newsTitle)
     const date = new Date().toISOString()
 
-    const newNewsItem: News = {
-      id: Date.now().toString(),
+    const newNewsItem: Omit<News, 'id'> = {
       title: newsTitle,
       image: newsImage,
       tag: newsTag,
@@ -235,12 +209,18 @@ export default function AdminPage() {
       date: date,
     }
 
-    saveNews([...news, newNewsItem])
-    setNewsTitle('')
-    setNewsImage('')
-    setNewsImagePreview('')
-    setNewsTag('NEWS')
-    setNewsContent('')
+    const id = await firebaseService.addNews(newNewsItem)
+    if (id) {
+      showAlert('success', 'Success', 'News added successfully!')
+      setNewsTitle('')
+      setNewsImage('')
+      setNewsImagePreview('')
+      setNewsTag('NEWS')
+      setNewsContent('')
+      loadData()
+    } else {
+      showAlert('error', 'Error', 'Failed to add news')
+    }
   }
 
   const deleteNews = (id: string) => {
@@ -250,7 +230,15 @@ export default function AdminPage() {
       'Delete News',
       `Are you sure you want to delete "${newsToDelete?.title}"? This action cannot be undone.`,
       {
-        onConfirm: () => saveNews(news.filter(n => n.id !== id)),
+        onConfirm: async () => {
+          const success = await firebaseService.deleteNews(id)
+          if (success) {
+            showAlert('success', 'Deleted', 'News deleted successfully')
+            loadData()
+          } else {
+            showAlert('error', 'Error', 'Failed to delete news')
+          }
+        },
         confirmText: 'Delete',
         cancelText: 'Cancel',
         showCancel: true
@@ -267,16 +255,15 @@ export default function AdminPage() {
     setNewsImagePreview(newsItem.image)
   }
 
-  const updateNews = () => {
+  const updateNews = async () => {
     if (!editingNews || !newsTitle || !newsImage || !newsContent) {
       showAlert('error', 'Error', 'Please fill all required fields')
       return
     }
 
-    const slug = generateSlug(newsTitle)
+    const slug = firebaseService.generateSlug(newsTitle)
 
-    const updatedNews: News = {
-      ...editingNews,
+    const updatedData: Partial<News> = {
       title: newsTitle,
       image: newsImage,
       content: newsContent,
@@ -285,8 +272,14 @@ export default function AdminPage() {
       // Keep original date, don't update
     }
 
-    saveNews(news.map(n => n.id === editingNews.id ? updatedNews : n))
-    cancelEditNews()
+    const success = await firebaseService.updateNews(editingNews.id, updatedData)
+    if (success) {
+      showAlert('success', 'Updated', 'News updated successfully')
+      cancelEditNews()
+      loadData()
+    } else {
+      showAlert('error', 'Error', 'Failed to update news')
+    }
   }
 
   const cancelEditNews = () => {

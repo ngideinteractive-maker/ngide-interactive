@@ -3,26 +3,20 @@
 import { useEffect, useState } from 'react'
 import GameCard from '@/components/cards/GameCard'
 import { useGameCarousel } from '@/hooks/useGameCarousel'
-
-interface Game {
-  id: string | number
-  title: string
-  image: string
-  platforms?: string[]
-  isComingSoon?: boolean
-}
+import { subscribeToGames, type Game } from '@/lib/firebaseService'
 
 export default function GamesSection() {
   const { carouselRef, initCarousel } = useGameCarousel()
   const [games, setGames] = useState<Game[]>([])
 
   useEffect(() => {
-    // Load games from admin (localStorage)
-    const adminGames = localStorage.getItem('adminGames')
-    if (adminGames) {
-      const parsedGames = JSON.parse(adminGames)
-      setGames(parsedGames)
-    }
+    // Subscribe to real-time games updates
+    const unsubscribe = subscribeToGames((gamesData) => {
+      setGames(gamesData)
+    })
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe()
   }, [])
 
   useEffect(() => {
