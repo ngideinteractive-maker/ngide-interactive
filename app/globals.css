@@ -208,7 +208,7 @@ body {
     cursor: pointer;
     position: relative;
     clip-path: polygon(0 3%, 100% 0, 100% 97%, 0 100%);
-    opacity: 0.4;
+    opacity: 0.8;
     transform: scale(0.75);
     will-change: transform, opacity;
 }
@@ -873,8 +873,8 @@ footer {
 
 /* --- Animasi Scroll --- */
 .animate-on-scroll {
-    opacity: 0;
-    transform: translateY(30px);
+    opacity: 1;
+    transform: translateY(0);
     transition: opacity 0.8s ease-out, transform 0.8s ease-out;
 }
 

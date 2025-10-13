@@ -5,29 +5,50 @@ import Link from 'next/link'
 import { subscribeToNews, type News } from '@/lib/firebaseService'
 
 export default function NewsSection() {
+  console.log('📰📰📰 NewsSection: FUNCTION CALLED!')
+  
   const [news, setNews] = useState<News[]>([])
-  const [, forceUpdate] = useState({})
+  const [updateKey, setUpdateKey] = useState(0)
+
+  console.log('📰📰📰 NewsSection: States initialized')
 
   useEffect(() => {
-    console.log('NewsSection: Component mounted, setting up subscription...')
+    console.log('📰📰📰 NewsSection: useEffect RUNNING!')
+    console.log('📰 NewsSection: Component mounted, setting up subscription...')
+    console.log('📰 NewsSection: Current time:', new Date().toLocaleTimeString())
     
     // Subscribe to real-time news updates
     const unsubscribe = subscribeToNews((newsData) => {
-      console.log('NewsSection: Received news update:', newsData.length, 'items')
-      setNews(newsData)
-      // Force re-render to ensure UI updates
-      forceUpdate({})
+      console.log('📰🔥 NewsSection: CALLBACK TRIGGERED!')
+      console.log('📰 NewsSection: Received news update:', newsData.length, 'items')
+      console.log('📰 NewsSection: News data:', newsData)
+      console.log('📰 NewsSection: Time:', new Date().toLocaleTimeString())
+      
+      // Force complete re-render with new data
+      setNews([...newsData])
+      setUpdateKey(prev => prev + 1)
+      
+      // Additional force update after a delay to ensure DOM is updated
+      setTimeout(() => {
+        setUpdateKey(prev => prev + 1)
+      }, 100)
     })
+
+    console.log('📰 NewsSection: Subscription setup complete!')
 
     // Cleanup subscription on unmount
     return () => {
-      console.log('NewsSection: Component unmounting, cleaning up subscription')
+      console.log('📰 NewsSection: Component unmounting, cleaning up subscription')
       unsubscribe()
     }
   }, [])
 
+  console.log('📰 NewsSection RENDER - news.length:', news.length)
+  console.log('📰 NewsSection RENDER - updateKey:', updateKey)
+  console.log('📰 NewsSection RENDER - news:', news)
+
   return (
-    <section id="news" className="content-section">
+    <section id="news" className="content-section" key={`news-section-${updateKey}`}>
       <div className="container">
         <div className="news-header">
           <h2 className="section-title-left animate-on-scroll">What&apos;s the latest news?</h2>
@@ -36,11 +57,11 @@ export default function NewsSection() {
           </Link>
         </div>
         {news.length > 0 ? (
-          <div className="news-grid">
+          <div className="news-grid" key={`news-grid-${updateKey}`}>
             {news[0] && news[0].slug && (
               <Link 
                 href={`/news/${news[0].slug}`} 
-                key={`featured-${news[0].id}`}
+                key={`featured-${news[0].id}-${updateKey}`}
                 className="news-featured animate-on-scroll"
               >
                 <div className="news-image" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)' }}>
@@ -54,10 +75,10 @@ export default function NewsSection() {
                 </div>
               </Link>
             )}
-            <div className="news-list">
-              {news.slice(1).map((item) => (
+            <div className="news-list" key={`news-list-${updateKey}`}>
+              {news.slice(1).map((item, index) => (
                 item.slug ? (
-                  <Link href={`/news/${item.slug}`} key={item.id} className="news-item animate-on-scroll">
+                  <Link href={`/news/${item.slug}`} key={`${item.id}-${updateKey}-${index}`} className="news-item animate-on-scroll">
                     <div className="news-item-content">
                       <h4>{item.title}</h4>
                       <div className="news-meta">
@@ -69,7 +90,7 @@ export default function NewsSection() {
                     </div>
                   </Link>
                 ) : (
-                  <div key={item.id} className="news-item animate-on-scroll">
+                  <div key={`${item.id}-${updateKey}-${index}`} className="news-item animate-on-scroll">
                     <div className="news-item-content">
                       <h4>{item.title}</h4>
                       <div className="news-meta">

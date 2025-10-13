@@ -223,15 +223,21 @@ export default function AdminPage() {
     }
   }
 
-  const deleteNews = (id: string) => {
+  const deleteNews = async (id: string) => {
+    console.log('🗑️ Delete news clicked, ID:', id)
     const newsToDelete = news.find(n => n.id === id)
+    console.log('🗑️ News to delete:', newsToDelete)
+    
     showAlert(
       'warning',
       'Delete News',
       `Are you sure you want to delete "${newsToDelete?.title}"? This action cannot be undone.`,
       {
         onConfirm: async () => {
+          console.log('🗑️ Delete confirmed, calling Firebase...')
           const success = await firebaseService.deleteNews(id)
+          console.log('🗑️ Delete result:', success)
+          
           if (success) {
             showAlert('success', 'Deleted', 'News deleted successfully')
             loadData()

@@ -11,8 +11,17 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 }
 
+console.log('🔥 Firebase Config:', {
+  projectId: firebaseConfig.projectId,
+  hasApiKey: !!firebaseConfig.apiKey,
+  hasAuthDomain: !!firebaseConfig.authDomain,
+})
+
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
 const db = getFirestore(app)
+
+console.log('🔥 Firebase initialized successfully!')
+console.log('🔥 Firestore instance:', !!db)
 
 export { app, db }

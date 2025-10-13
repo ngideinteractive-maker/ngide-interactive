@@ -45,22 +45,21 @@ export default function Home() {
     }, 100)
   }
 
+  // Always render main content, just hide it visually during loading
   return (
     <>
       {isLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
-      {showContent && (
-        <main key="main-content">
-          <SpaceCanvas />
-          <ClientOnlyWrapper />
-          <HeroSection />
-          <GamesSection key="games-section" />
-          <NewsSection key="news-section" />
-          <StudioSection />
-          <TechnologySection />
-          <ContactSection />
-          <Footer />
-        </main>
-      )}
+      <main style={{ opacity: showContent ? 1 : 0, transition: 'opacity 0.3s' }}>
+        <SpaceCanvas />
+        <ClientOnlyWrapper />
+        <HeroSection />
+        <GamesSection />
+        <NewsSection />
+        <StudioSection />
+        <TechnologySection />
+        <ContactSection />
+        <Footer />
+      </main>
     </>
   )
 }

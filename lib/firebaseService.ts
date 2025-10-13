@@ -133,10 +133,19 @@ export const updateNews = async (id: string, news: Partial<News>): Promise<boole
 
 export const deleteNews = async (id: string): Promise<boolean> => {
   try {
-    await deleteDoc(doc(db, NEWS_COLLECTION, id))
+    console.log('[Firebase] Deleting news, ID:', id)
+    const newsRef = doc(db, NEWS_COLLECTION, id)
+    console.log('[Firebase] News ref created:', newsRef.path)
+    
+    await deleteDoc(newsRef)
+    console.log('[Firebase] News deleted successfully')
     return true
   } catch (error) {
-    console.error('Error deleting news:', error)
+    console.error('[Firebase] Error deleting news:', error)
+    if (error instanceof Error) {
+      console.error('[Firebase] Error message:', error.message)
+      console.error('[Firebase] Error stack:', error.stack)
+    }
     return false
   }
 }
