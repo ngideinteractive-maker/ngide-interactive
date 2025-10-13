@@ -49,12 +49,12 @@ export default function Home() {
     <>
       {isLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
       {showContent && (
-        <main>
+        <main key="main-content">
           <SpaceCanvas />
           <ClientOnlyWrapper />
           <HeroSection />
-          <GamesSection />
-          <NewsSection />
+          <GamesSection key="games-section" />
+          <NewsSection key="news-section" />
           <StudioSection />
           <TechnologySection />
           <ContactSection />

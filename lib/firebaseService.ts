@@ -153,35 +153,53 @@ export const generateSlug = (title: string): string => {
 // ==================== REAL-TIME LISTENERS ====================
 
 export const subscribeToGames = (callback: (games: Game[]) => void) => {
+  console.log('[Firebase] Setting up games subscription...')
   const gamesRef = collection(db, GAMES_COLLECTION)
   const q = query(gamesRef, orderBy('createdAt', 'desc'))
   
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    const games = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Game))
-    callback(games)
-  }, (error) => {
-    console.error('Error subscribing to games:', error)
-  })
+  const unsubscribe = onSnapshot(q, 
+    (snapshot) => {
+      console.log('[Firebase] Games snapshot received:', snapshot.size, 'documents')
+      const games = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Game))
+      console.log('[Firebase] Calling games callback with', games.length, 'games')
+      callback(games)
+    }, 
+    (error) => {
+      console.error('[Firebase] Error subscribing to games:', error)
+      console.error('[Firebase] Error code:', error.code)
+      console.error('[Firebase] Error message:', error.message)
+    }
+  )
   
+  console.log('[Firebase] Games subscription established')
   return unsubscribe
 }
 
 export const subscribeToNews = (callback: (news: News[]) => void) => {
+  console.log('[Firebase] Setting up news subscription...')
   const newsRef = collection(db, NEWS_COLLECTION)
   const q = query(newsRef, orderBy('createdAt', 'desc'))
   
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    const news = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as News))
-    callback(news)
-  }, (error) => {
-    console.error('Error subscribing to news:', error)
-  })
+  const unsubscribe = onSnapshot(q, 
+    (snapshot) => {
+      console.log('[Firebase] News snapshot received:', snapshot.size, 'documents')
+      const news = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as News))
+      console.log('[Firebase] Calling news callback with', news.length, 'news items')
+      callback(news)
+    }, 
+    (error) => {
+      console.error('[Firebase] Error subscribing to news:', error)
+      console.error('[Firebase] Error code:', error.code)
+      console.error('[Firebase] Error message:', error.message)
+    }
+  )
   
+  console.log('[Firebase] News subscription established')
   return unsubscribe
 }

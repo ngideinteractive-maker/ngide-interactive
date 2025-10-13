@@ -8,13 +8,19 @@ export default function NewsSection() {
   const [news, setNews] = useState<News[]>([])
 
   useEffect(() => {
+    console.log('NewsSection: Component mounted, setting up subscription...')
+    
     // Subscribe to real-time news updates
     const unsubscribe = subscribeToNews((newsData) => {
+      console.log('NewsSection: Received news update:', newsData.length, 'items')
       setNews(newsData)
     })
 
     // Cleanup subscription on unmount
-    return () => unsubscribe()
+    return () => {
+      console.log('NewsSection: Component unmounting, cleaning up subscription')
+      unsubscribe()
+    }
   }, [])
 
   const featured = news[0]

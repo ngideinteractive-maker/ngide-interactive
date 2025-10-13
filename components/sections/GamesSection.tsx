@@ -10,13 +10,19 @@ export default function GamesSection() {
   const [games, setGames] = useState<Game[]>([])
 
   useEffect(() => {
+    console.log('GamesSection: Component mounted, setting up subscription...')
+    
     // Subscribe to real-time games updates
     const unsubscribe = subscribeToGames((gamesData) => {
+      console.log('GamesSection: Received games update:', gamesData.length, 'items')
       setGames(gamesData)
     })
 
     // Cleanup subscription on unmount
-    return () => unsubscribe()
+    return () => {
+      console.log('GamesSection: Component unmounting, cleaning up subscription')
+      unsubscribe()
+    }
   }, [])
 
   useEffect(() => {
