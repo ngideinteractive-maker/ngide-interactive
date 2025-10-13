@@ -9,4 +9,5 @@ export default function ClientOnlyWrapper() {
   useScrollRestoration()
 
   return <DevToolsModal show={showModal} />
+  
 }
