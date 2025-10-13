@@ -26,10 +26,15 @@ export default function GamesSection() {
   }, [])
 
   useEffect(() => {
-    if (carouselRef.current) {
-      initCarousel()
+    if (carouselRef.current && games.length > 0) {
+      // Wait for DOM to update with new games
+      const timer = setTimeout(() => {
+        initCarousel()
+      }, 200)
+      
+      return () => clearTimeout(timer)
     }
-  }, [games])
+  }, [games, initCarousel])
 
   return (
     <section id="games" className="content-section">

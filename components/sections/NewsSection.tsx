@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { subscribeToNews, type News } from '@/lib/firebaseService'
 
 export default function NewsSection() {
   const [news, setNews] = useState<News[]>([])
+  const [, forceUpdate] = useState({})
 
   useEffect(() => {
     console.log('NewsSection: Component mounted, setting up subscription...')
@@ -14,6 +15,8 @@ export default function NewsSection() {
     const unsubscribe = subscribeToNews((newsData) => {
       console.log('NewsSection: Received news update:', newsData.length, 'items')
       setNews(newsData)
+      // Force re-render to ensure UI updates
+      forceUpdate({})
     })
 
     // Cleanup subscription on unmount
@@ -23,9 +26,6 @@ export default function NewsSection() {
     }
   }, [])
 
-  const featured = news[0]
-  const items = news.slice(1)
-  
   return (
     <section id="news" className="content-section">
       <div className="container">
@@ -37,21 +37,25 @@ export default function NewsSection() {
         </div>
         {news.length > 0 ? (
           <div className="news-grid">
-            {featured && featured.slug && (
-              <Link href={`/news/${featured.slug}`} className="news-featured animate-on-scroll">
+            {news[0] && news[0].slug && (
+              <Link 
+                href={`/news/${news[0].slug}`} 
+                key={`featured-${news[0].id}`}
+                className="news-featured animate-on-scroll"
+              >
                 <div className="news-image" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)' }}>
-                  <img src={featured.image} alt="Featured News" />
+                  <img src={news[0].image} alt="Featured News" />
                 </div>
                 <div className="news-content">
-                  <h3>{featured.title}</h3>
+                  <h3>{news[0].title}</h3>
                   <div className="news-meta">
-                    <span className="news-tag">{featured.tag}</span>
+                    <span className="news-tag">{news[0].tag}</span>
                   </div>
                 </div>
               </Link>
             )}
             <div className="news-list">
-              {items.map((item) => (
+              {news.slice(1).map((item) => (
                 item.slug ? (
                   <Link href={`/news/${item.slug}`} key={item.id} className="news-item animate-on-scroll">
                     <div className="news-item-content">
