@@ -6,7 +6,9 @@ export default function HeroSection() {
   return (
     <section id="hero">
       <div className="hero-content">
-        <h1 className="logo-title fade-in">NGIDE INTERACTIVE</h1>
+        <div className="logo-title fade-in">
+          <img src="/img/studiopanjang2.png" alt="NGIDE Interactive" />
+        </div>
         <p className="tagline fade-in">Where Ideas Comes to Play</p>
       </div>
       <Link href="#games" className="scroll-down">

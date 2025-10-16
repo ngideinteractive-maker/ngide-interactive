@@ -46,7 +46,7 @@ export default function Footer() {
       <div className="footer-content">
         <div className="footer-left">
           <div className="footer-logo">
-            <h2>NGIDE INTERACTIVE</h2>
+            <img src="/img/studio2.png" alt="NGIDE Interactive" />
           </div>
           <nav className="footer-nav">
             {navLinks.map((link) => (

@@ -75,6 +75,15 @@ body {
     font-size: 4rem;
     letter-spacing: 5px;
     text-shadow: 0 0 15px var(--accent-glow);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-title img {
+    height: 300px;
+    width: auto;
+    object-fit: contain;
 }
 
 .tagline {
@@ -786,13 +795,19 @@ footer {
     padding: 0 3rem;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 2rem;
 }
 
 .footer-left {
     display: flex;
-    gap: 4rem;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.footer-logo {
+    display: flex;
     align-items: center;
 }
 
@@ -803,9 +818,16 @@ footer {
     letter-spacing: 2px;
 }
 
+.footer-logo img {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+}
+
 .footer-nav {
     display: flex;
     gap: 2rem;
+    flex-wrap: wrap;
 }
 
 .footer-nav a {
@@ -814,6 +836,7 @@ footer {
     font-family: var(--font-body);
     font-size: 0.9rem;
     transition: color 0.3s ease;
+    white-space: nowrap;
 }
 
 .footer-nav a:hover {
@@ -827,7 +850,7 @@ footer {
 
 .social-links {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .social-links a {
@@ -836,10 +859,14 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .social-links a:hover {
     color: var(--primary-text-color);
+    background: rgba(255, 255, 255, 0.1);
     transform: translateY(-3px);
 }
 
@@ -886,6 +913,7 @@ footer {
 /* --- Responsif untuk Mobile --- */
 @media (max-width: 768px) {
     .logo-title { font-size: 2.5rem; }
+    .logo-title img { height: 200px; }
     .tagline { font-size: 1rem; }
     .section-title { font-size: 2rem; }
     .section-title-left { font-size: 2rem; }
@@ -971,16 +999,28 @@ footer {
         flex-direction: column;
         gap: 2rem;
         padding: 0 1.5rem;
+        align-items: flex-start;
     }
     
     .footer-left {
-        flex-direction: column;
-        gap: 1.5rem;
-        align-items: flex-start;
+        width: 100%;
+    }
+    
+    .footer-logo img {
+        height: 40px;
     }
     
     .footer-nav {
         flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .footer-right {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .social-links {
         gap: 1rem;
     }
     
