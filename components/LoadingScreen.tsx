@@ -13,6 +13,7 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
   const [isExploding, setIsExploding] = useState(false)
   const [isPlayingVideo, setIsPlayingVideo] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [showSkipHint, setShowSkipHint] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -113,6 +114,10 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
     // After explosion animation, show video
     setTimeout(() => {
       setIsPlayingVideo(true)
+      // Show skip hint after 5 seconds
+      setTimeout(() => {
+        setShowSkipHint(true)
+      }, 5000)
     }, 1500)
   }
 
@@ -120,6 +125,31 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
     // After video ends, transition to main menu
     onComplete()
   }
+
+  const handleSkip = () => {
+    // Skip video and go to main menu
+    if (videoRef.current) {
+      videoRef.current.pause()
+    }
+    onComplete()
+  }
+
+  // Handle keyboard shortcut (Space to skip)
+  useEffect(() => {
+    if (!isPlayingVideo || !showSkipHint) return
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault()
+        handleSkip()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress)
+    }
+  }, [isPlayingVideo, showSkipHint, onComplete])
 
 
   // Calculate square progress (perimeter of square)
@@ -289,6 +319,57 @@ export default function LoadingScreen({ onComplete }: LoadingScreenProps) {
             <source src="/video/intro.webm" type="video/webm" />
             {/* Fallback: jika video tidak ada, langsung ke menu */}
           </video>
+
+          {/* Skip Hint */}
+          {showSkipHint && (
+            <div 
+              className="skip-hint"
+              style={{
+                position: 'fixed',
+                top: '20px',
+                right: '20px',
+                zIndex: 1000001,
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                border: '2px solid rgba(255, 255, 255, 0.8)',
+                borderRadius: '8px',
+                padding: '12px 20px',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                fontFamily: 'inherit',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                backdropFilter: 'blur(10px)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                animation: 'fadeIn 0.5s ease-in'
+              }}
+              onClick={handleSkip}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'
+                e.currentTarget.style.borderColor = '#ffffff'
+                e.currentTarget.style.transform = 'scale(1.05)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.8)'
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span>Press <kbd style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontFamily: 'monospace',
+                fontWeight: 'bold'
+              }}>SPACE</kbd> to skip if the video stuck</span>
+            </div>
+          )}
         </div>
       )}
 
