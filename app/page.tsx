@@ -49,7 +49,12 @@ export default function Home() {
   return (
     <>
       {isLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
-      <main style={{ opacity: showContent ? 1 : 0, transition: 'opacity 0.3s' }}>
+      <main style={{ 
+        opacity: showContent ? 1 : 0, 
+        transition: 'opacity 0.3s',
+        pointerEvents: showContent ? 'auto' : 'none',
+        zIndex: showContent ? 1 : -1
+      }}>
         <SpaceCanvas />
         <ClientOnlyWrapper />
         <HeroSection />

@@ -18,6 +18,12 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: 'Ngide Interactive - Where Ideas Comes to Play',
   description: 'Creating immersive gaming experiences with cutting-edge technology',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
 }
 
 export default function RootLayout({
